@@ -55,12 +55,12 @@ export default function FinalScreen({ navigation }) {
           <Text style={styles.subText}>Every single answer was...</Text>
           <Text style={styles.trumpText}>TRUMP</Text>
           
-          <View style={styles.statsContainer}>
-            <Text style={styles.statsText}>20 clues</Text>
+           <View style={styles.statsContainer}>
+            <Text style={styles.statsText}>20 Questions</Text>
             <Text style={styles.statsDivider}>•</Text>
-            <Text style={styles.statsText}>20 times Trump</Text>
+            <Text style={styles.statsText}>20 Trumps</Text>
             <Text style={styles.statsDivider}>•</Text>
-            <Text style={styles.statsText}>0 surprises</Text>
+            <Text style={styles.statsText}>1 Big Surprise</Text>
           </View>
 
           <Text style={styles.tagline}>

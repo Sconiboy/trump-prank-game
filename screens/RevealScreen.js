@@ -1,38 +1,35 @@
 import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar, Animated } from 'react-native';
 import cluesData from '../data/clues.json';
-import proofsData from '../data/proofs.json';
-import { playWrongSound, playTrumpSound } from '../utils/sounds';
+import { playWrongSound } from '../utils/sounds';
 
 export default function RevealScreen({ route, navigation }) {
   const { cardIndex, guessedVillain } = route.params;
-  const card = cluesData[cardIndex];
-  const proof = proofsData[card.id];
   const isLastCard = cardIndex === 19;
+  
+  // They're only "correct" if they guessed Trump
+  const isCorrect = guessedVillain === 'Donald Trump';
 
   const fadeAnim = new Animated.Value(0);
   const scaleAnim = new Animated.Value(0.8);
 
   useEffect(() => {
-    // Play sound effects
-    const playSounds = async () => {
-      await playWrongSound();
-      setTimeout(() => {
-        playTrumpSound();
-      }, 800);
-    };
-    playSounds();
+    // Play sound effect
+    if (!isCorrect) {
+      playWrongSound();
+    }
 
-    // Animate
+    // Animate in
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 600,
+        duration: 500,
         useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
-        friction: 4,
+        tension: 50,
+        friction: 7,
         useNativeDriver: true,
       }),
     ]).start();
@@ -50,34 +47,38 @@ export default function RevealScreen({ route, navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       <View style={styles.content}>
-        <Animated.View 
+        <Animated.View
           style={[
-            styles.revealContainer,
+            styles.resultContainer,
             { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
           ]}
         >
-          <Text style={styles.wrongText}>WRONG.</Text>
-          <Text style={styles.answerText}>IT'S TRUMP.</Text>
-          
-          <View style={styles.proofContainer}>
-            <Text style={styles.proofLabel}>PROOF:</Text>
-            <Text style={styles.proofText}>{proof}</Text>
-          </View>
+          {isCorrect ? (
+            <>
+              <Text style={styles.correctText}>CORRECT!</Text>
+              <Text style={styles.messageText}>You got it right!</Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.wrongText}>WRONG!</Text>
+              <Text style={styles.messageText}>Better luck on the next one!</Text>
+            </>
+          )}
 
-          <View style={styles.decoyContainer}>
-            <Text style={styles.decoyLabel}>You guessed:</Text>
-            <Text style={styles.decoyText}>{guessedVillain || card.decoy}</Text>
+          <View style={styles.guessContainer}>
+            <Text style={styles.guessLabel}>You guessed:</Text>
+            <Text style={styles.guessText}>{guessedVillain}</Text>
           </View>
         </Animated.View>
 
         <TouchableOpacity
           style={styles.nextButton}
           onPress={handleNext}
-          accessibilityLabel={isLastCard ? "View final results" : "Next card"}
+          accessibilityLabel={isLastCard ? "See results" : "Next question"}
           accessibilityRole="button"
         >
           <Text style={styles.nextButtonText}>
-            {isLastCard ? 'SEE FINAL RESULT' : 'NEXT'}
+            {isLastCard ? 'SEE RESULTS' : 'NEXT'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -92,69 +93,55 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
     padding: 20,
+    justifyContent: 'center',
   },
-  revealContainer: {
+  resultContainer: {
     alignItems: 'center',
     marginBottom: 50,
   },
   wrongText: {
-    fontSize: 48,
+    fontSize: 64,
     fontWeight: 'bold',
     color: '#ff4444',
-    marginBottom: 15,
-    letterSpacing: 3,
+    marginBottom: 20,
     textShadowColor: '#ff4444',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
+    textShadowRadius: 20,
   },
-  answerText: {
-    fontSize: 56,
+  correctText: {
+    fontSize: 64,
     fontWeight: 'bold',
-    color: '#FFD700',
-    marginBottom: 40,
-    letterSpacing: 4,
-    textShadowColor: '#FFD700',
+    color: '#44ff44',
+    marginBottom: 20,
+    textShadowColor: '#44ff44',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 15,
+    textShadowRadius: 20,
   },
-  proofContainer: {
+  messageText: {
+    fontSize: 22,
+    color: '#aaa',
+    marginBottom: 40,
+    textAlign: 'center',
+  },
+  guessContainer: {
     backgroundColor: '#2a2a2a',
     padding: 20,
     borderRadius: 12,
-    width: '100%',
-    marginBottom: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: '#FFD700',
-  },
-  proofLabel: {
-    fontSize: 12,
-    color: '#FFD700',
-    fontWeight: 'bold',
-    marginBottom: 8,
-    letterSpacing: 1,
-  },
-  proofText: {
-    fontSize: 16,
-    color: '#fff',
-    lineHeight: 24,
-  },
-  decoyContainer: {
     alignItems: 'center',
-    marginTop: 10,
+    minWidth: 250,
   },
-  decoyLabel: {
+  guessLabel: {
     fontSize: 14,
     color: '#888',
-    marginBottom: 5,
-    fontStyle: 'italic',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
-  decoyText: {
-    fontSize: 18,
-    color: '#aaa',
+  guessText: {
+    fontSize: 24,
+    color: '#fff',
     fontWeight: '600',
-    textDecorationLine: 'line-through',
   },
   nextButton: {
     backgroundColor: '#FFD700',
